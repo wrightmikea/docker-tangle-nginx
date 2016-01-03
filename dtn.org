@@ -16,8 +16,8 @@ mkdir build
 #+END_SRC
 *** environment set up
 #+RESULTS: setup
-: 
 : /Users/mwright/github/wrightmikea/docker-tangle-nginx
+: mwright@SV-LT-1080:~/github/wrightmikea/docker-tangle-nginx[master]$ mkdir: build: File exists
 
 ** Create a docker image
 *** Generate a simple Dockerfile (Ubuntu bash) in the build directory
@@ -45,13 +45,11 @@ Step 2 : RUN apt-get update && apt-get install -y nginx
 Using cache
 ea237cffea5c
 /usr/share/nginx/html/index.html
-Running in 9678b947efa1
+Using cache
 11f3ee116210
-Removing intermediate container 9678b947efa1
 Step 4 : EXPOSE 80
-Running in 3effa1a31c01
+Using cache
 d81f45444c28
-Removing intermediate container 3effa1a31c01
 Successfully built d81f45444c28
 #+end_example
 
@@ -68,25 +66,24 @@ docker ps
 #+END_SRC
 produces:
 #+RESULTS: run-image
-: CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                  NAMES
-: 80/tcp   dtnweb
-: dtnweb
-: dtnweb
-: 861e07ec64f74316248b3e41951f62783b6be93439806643adab67be20e3304c
-: Error response from daemon: Conflict. The name "dtnweb" is already in use by container 861e07ec64f7. You have to remove (or rename) that container to be able to reuse that name.
 : CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+: Error response from daemon: no such id: dtnweb
+: Error: failed to stop containers: [dtnweb]
+: Error response from daemon: no such id: dtnweb
+: Error: failed to remove containers: [dtnweb]
+: aec22798d679b435302d8d164665df1c35723c0251fb653ebf4aa1bfd0ef9c7a
+: CONTAINER ID        IMAGE               COMMAND                  CREATED                  STATUS                  PORTS                  NAMES
+: 80/tcp   dtnweb
 
 ** Fetch from the NGINX server
 #+BEGIN_SRC sh :exports both :results output verbatim replace 
 exec 2>&1
-curl $(docker-machine ip default):8888/
+curl -s $(docker-machine ip default):8888/
 :
 #+END_SRC
 
 #+RESULTS:
-:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-:                                  Dload  Upload   Total   Spent    Left  Speed
-:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (7) Failed to connect to localhost port 8888: Connection refused
+: *** It is full of stars ***
 
 ** stop the container
 #+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
@@ -98,7 +95,8 @@ docker ps
 #+END_SRC
 
 #+RESULTS:
-: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+: CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+: 80/tcp   dtnweb
 : dtnweb
 : dtnweb
 : CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
