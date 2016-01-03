@@ -86,7 +86,7 @@ shows:
 : 75d7181d1c1e        dockertanglenginx   "nginx -g 'daemon off"   About a minute ago   Up About a minute   0.0.0.0:8888-＞80/tcp   dtnweb
 
 ** Fetch from the NGINX server
-Since this is on a Mac and docker is running a virtual machine, use the vm's IP address (instead of localhost)
+Since this is on a Mac and docker is running in a virtual machine, use the vm's IP address (instead of localhost).
 #+name: nginx-contents
 #+BEGIN_SRC sh :exports both :noweb yes :results output replace 
 curl -s $(docker-machine ip default):8888/
