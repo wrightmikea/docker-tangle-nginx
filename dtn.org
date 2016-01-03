@@ -7,14 +7,15 @@ Use docker shell session to start ngnix.
 Use a shell to access ngnix content.
 Use a docker shell session to stop the nginx container.
 ** Setup
-*** set docker environement variables
+*** set docker environment variables
+shell commands
 #+name: setup
 #+BEGIN_SRC sh :exports both :results output verbatim :session dtnorg
 eval "$(docker-machine env default)"
 env | grep DOCKER
 mkdir -p build
 #+END_SRC
-*** environment set up
+output:
 #+RESULTS: setup
 : 
 : DOCKER_HOST=tcp://192.168.99.100:2376
@@ -23,7 +24,7 @@ mkdir -p build
 : DOCKER_CERT_PATH=/Users/mwright/.docker/machine/machines/default
 
 ** Create a docker image
-*** Generate a simple Dockerfile (Ubuntu bash) in the build directory
+*** Generate a simple Dockerfile in the build directory
 # C-c C-v t 
 #+name: generate-dockerfile
 #+BEGIN_SRC dockerfile :exports code :padline no :tangle build/Dockerfile
@@ -58,6 +59,7 @@ Successfully built d81f45444c28
 
 ** Run the created docker image
 *** Run NGINX
+Stop and rm commands will fail the first time, so ignoring their output.
 #+name: run-image
 #+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
 docker stop dtnweb 2>&1 | tail -n 0 
@@ -67,30 +69,31 @@ docker run -d -p 8888:80 --name dtnweb dockertanglenginx nginx -g "daemon off;"
 produces:
 #+RESULTS: run-image
 : 
-: mwright@SV-LT-1080:~/github/wrightmikea/docker-tangle-nginx[master]$ a2954b153a131f6fa471b72064f40b7faf8dd71d9f2de70123b2624d70eec64f
+: mwright@SV-LT-1080:~/github/wrightmikea/docker-tangle-nginx[master]$ 75d7181d1c1e0204353eb387357ffa07853ab92adb502c38ee5f1b96be618866
 
+Checking for the running image:
 #+name: do-not-evaluate
 #+BEGIN_SRC sh :exports code :eval no
 docker ps
 #+END_SRC
-#+name: workaround
+#+name: hide-sed-workaround-code
 #+BEGIN_SRC sh :exports results :results output replace :session dtnorg
 docker ps | sed 's/>/＞/'
 #+END_SRC
-
-#+RESULTS: workaround
-: CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
-: a2954b153a13        dockertanglenginx   "nginx -g 'daemon off"   10 seconds ago      Up 10 seconds       0.0.0.0:8888-＞80/tcp   dtnweb
+shows:
+#+RESULTS: hide-sed-workaround-code
+: CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                  NAMES
+: 75d7181d1c1e        dockertanglenginx   "nginx -g 'daemon off"   About a minute ago   Up About a minute   0.0.0.0:8888-＞80/tcp   dtnweb
 
 ** Fetch from the NGINX server
-
-#+BEGIN_SRC sh :exports both :noweb yes :results output verbatim replace 
+Since this is on a Mac and docker is running a virtual machine, use the vm's IP address (instead of localhost)
+#+name: nginx-contents
+#+BEGIN_SRC sh :exports both :noweb yes :results output replace 
 curl -s $(docker-machine ip default):8888/
 #+END_SRC
-
-#+RESULTS:
+Content served by nginx:
+#+RESULTS: nginx-contents
 : *** It is full of stars ***
-
 
 ** stop the container
 #+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
