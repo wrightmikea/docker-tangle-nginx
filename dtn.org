@@ -1,0 +1,105 @@
+* Docker Tangle NGINX
+** Overview
+Create a shell session to set up docker environment.
+Tangle a Dockerfile
+Use docker shell session to run docker build.
+Use docker shell session to start ngnix
+Use a shell to access ngnix content
+Use a docker shell session to stop the nginx container
+** Setup
+*** set docker environement variables; create test data in to-be-shared directory
+#+name: setup
+#+BEGIN_SRC sh :exports source :results output verbatim :session dtnorg
+pwd
+eval "$(docker-machine env default)"
+mkdir build
+#+END_SRC
+*** environment set up
+#+RESULTS: setup
+: 
+: /Users/mwright/github/wrightmikea/docker-tangle-nginx
+
+** Create a docker image
+*** Generate a simple Dockerfile (Ubuntu bash) in the build directory
+# C-c C-v t 
+#+name: generate-dockerfile
+#+BEGIN_SRC dockerfile :exports code :padline no :tangle build/Dockerfile
+FROM ubuntu:14.04
+RUN apt-get update && apt-get install -y nginx
+RUN echo '*** It is full of stars ***' > /usr/share/nginx/html/index.html
+EXPOSE 80
+#+END_SRC
+
+*** Build the docker image and tag it
+#+name: build-image
+#+BEGIN_SRC sh :exports both :padline no :results output verbatim replace :session dtnorg
+docker build -t dockertanglenginx build
+#+END_SRC
+produces:
+#+RESULTS: build-image
+#+begin_example
+Sending build context to Docker daemon 2.048 kBSending build context to Docker daemon 2.048 kB
+Step 1 : FROM ubuntu:14.04
+89d5d8e8bafb
+Step 2 : RUN apt-get update && apt-get install -y nginx
+Using cache
+ea237cffea5c
+/usr/share/nginx/html/index.html
+Running in 9678b947efa1
+11f3ee116210
+Removing intermediate container 9678b947efa1
+Step 4 : EXPOSE 80
+Running in 3effa1a31c01
+d81f45444c28
+Removing intermediate container 3effa1a31c01
+Successfully built d81f45444c28
+#+end_example
+
+** Run the created docker image
+*** Run NGINX
+#+name: run-image
+#+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
+docker ps
+docker stop dtnweb
+docker rm dtnweb
+docker run -d -p 8888:80 --name dtnweb dockertanglenginx nginx -g "daemon off;"
+docker ps
+:
+#+END_SRC
+produces:
+#+RESULTS: run-image
+: CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                  NAMES
+: 80/tcp   dtnweb
+: dtnweb
+: dtnweb
+: 861e07ec64f74316248b3e41951f62783b6be93439806643adab67be20e3304c
+: Error response from daemon: Conflict. The name "dtnweb" is already in use by container 861e07ec64f7. You have to remove (or rename) that container to be able to reuse that name.
+: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+** Fetch from the NGINX server
+#+BEGIN_SRC sh :exports both :results output verbatim replace 
+exec 2>&1
+curl $(docker-machine ip default):8888/
+:
+#+END_SRC
+
+#+RESULTS:
+:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+:                                  Dload  Upload   Total   Spent    Left  Speed
+:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (7) Failed to connect to localhost port 8888: Connection refused
+
+** stop the container
+#+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
+docker ps
+docker stop dtnweb
+docker rm dtnweb
+docker ps
+:
+#+END_SRC
+
+#+RESULTS:
+: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+: dtnweb
+: dtnweb
+: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
