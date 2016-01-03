@@ -1,23 +1,26 @@
 * Docker Tangle NGINX
 ** Overview
 Create a shell session to set up docker environment.
-Tangle a Dockerfile
+Tangle a Dockerfile.
 Use docker shell session to run docker build.
-Use docker shell session to start ngnix
-Use a shell to access ngnix content
-Use a docker shell session to stop the nginx container
+Use docker shell session to start ngnix.
+Use a shell to access ngnix content.
+Use a docker shell session to stop the nginx container.
 ** Setup
-*** set docker environement variables; create test data in to-be-shared directory
+*** set docker environement variables
 #+name: setup
-#+BEGIN_SRC sh :exports source :results output verbatim :session dtnorg
-pwd
+#+BEGIN_SRC sh :exports both :results output verbatim :session dtnorg
 eval "$(docker-machine env default)"
-mkdir build
+env | grep DOCKER
+mkdir -p build
 #+END_SRC
 *** environment set up
 #+RESULTS: setup
-: /Users/mwright/github/wrightmikea/docker-tangle-nginx
-: mwright@SV-LT-1080:~/github/wrightmikea/docker-tangle-nginx[master]$ mkdir: build: File exists
+: 
+: DOCKER_HOST=tcp://192.168.99.100:2376
+: DOCKER_MACHINE_NAME=default
+: DOCKER_TLS_VERIFY=1
+: DOCKER_CERT_PATH=/Users/mwright/.docker/machine/machines/default
 
 ** Create a docker image
 *** Generate a simple Dockerfile (Ubuntu bash) in the build directory
@@ -38,7 +41,7 @@ docker build -t dockertanglenginx build
 produces:
 #+RESULTS: build-image
 #+begin_example
-Sending build context to Docker daemon 2.048 kBSending build context to Docker daemon 2.048 kB
+Sending build context to Docker daemon 3.072 kBSending build context to Docker daemon 3.072 kB
 Step 1 : FROM ubuntu:14.04
 89d5d8e8bafb
 Step 2 : RUN apt-get update && apt-get install -y nginx
@@ -57,47 +60,45 @@ Successfully built d81f45444c28
 *** Run NGINX
 #+name: run-image
 #+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
-docker ps
-docker stop dtnweb
-docker rm dtnweb
+docker stop dtnweb 2>&1 | tail -n 0 
+docker rm dtnweb 2>&1 | tail -n 0 
 docker run -d -p 8888:80 --name dtnweb dockertanglenginx nginx -g "daemon off;"
-docker ps
-:
 #+END_SRC
 produces:
 #+RESULTS: run-image
-: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
-: Error response from daemon: no such id: dtnweb
-: Error: failed to stop containers: [dtnweb]
-: Error response from daemon: no such id: dtnweb
-: Error: failed to remove containers: [dtnweb]
-: aec22798d679b435302d8d164665df1c35723c0251fb653ebf4aa1bfd0ef9c7a
-: CONTAINER ID        IMAGE               COMMAND                  CREATED                  STATUS                  PORTS                  NAMES
-: 80/tcp   dtnweb
+: 
+: mwright@SV-LT-1080:~/github/wrightmikea/docker-tangle-nginx[master]$ a2954b153a131f6fa471b72064f40b7faf8dd71d9f2de70123b2624d70eec64f
+
+#+name: do-not-evaluate
+#+BEGIN_SRC sh :exports code :eval no
+docker ps
+#+END_SRC
+#+name: workaround
+#+BEGIN_SRC sh :exports results :results output replace :session dtnorg
+docker ps | sed 's/>/＞/'
+#+END_SRC
+
+#+RESULTS: workaround
+: CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+: a2954b153a13        dockertanglenginx   "nginx -g 'daemon off"   10 seconds ago      Up 10 seconds       0.0.0.0:8888-＞80/tcp   dtnweb
 
 ** Fetch from the NGINX server
-#+BEGIN_SRC sh :exports both :results output verbatim replace 
-exec 2>&1
+
+#+BEGIN_SRC sh :exports both :noweb yes :results output verbatim replace 
 curl -s $(docker-machine ip default):8888/
-:
 #+END_SRC
 
 #+RESULTS:
 : *** It is full of stars ***
 
+
 ** stop the container
 #+BEGIN_SRC sh :exports both :results output verbatim replace :session dtnorg
-docker ps
 docker stop dtnweb
 docker rm dtnweb
-docker ps
-:
 #+END_SRC
 
 #+RESULTS:
-: CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
-: 80/tcp   dtnweb
 : dtnweb
 : dtnweb
-: CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 
